@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vault Adventure</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app"></div>\   
+
+  <!-- Include React and ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  
+  <!-- Babel for JSX compilation -->
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  
+  <!-- React code directly in HTML -->
+  <script type="text/babel">
+    const App = () => {
+      const [storyStep, setStoryStep] = React.useState('start');
+      
+      // Manages the game variables
+      const [health, setHealth] = React.useState(100);
+      const [radiation, setRadiation] = React.useState(0);
+      const [bandage, setBandage] = React.useState(0);
+      const [stimP, setStimP] = React.useState(0);
+      const [radA, setRadA] = React.useState(0);
+      const [radX, setRadX] = React.useState(0);
+
+      const adventureData = {
+        start: {
+          text: 'You wake up in your bed from all the ruckus. You see a door on your right, you decide to take it. Then you see a corridor, do you choose to go left or right?', 
+          image: './images/cor_t.png',
+          color: '#FFFF00',
+          options: [
+            { text: 'Go left', nextStep: 'leftPath' },
+            { text: 'Go right', nextStep: 'rightPath' }
+          ]
+        },
+
+        leftPath: {
+          text: 'You go left and you find yourself in the vault`s atrium, no one is there except yourself. There is nothing else to see.',
+          options: [
+            { text: 'Return', nextStep: 'start' }
+        ]
+        },
+
+        rightPath: {
+          text: 'You find yourself at the end of the corridor, with two corridors on your left and right, which corridor will you take?',
+          image: './images/cor_t.png',
+          options: [
+            { text: 'Left', nextStep: 'leftCor' },
+            { text: 'Right', nextStep: 'rightCor' }
+          ]
+        },
+
+        rightCor: { 
+          text: 'You find a door that leads to the medical room, you loot it to find 10 Bandages, 5 Stimpaks, 7 Radaways, and 1 RadX.',
+          image: './images/medbay.png' ,
+          options: [
+            { 
+              text: 'Collect & return', 
+              nextStep: 'rightPath2',
+              action: () => {
+                setBandage(bandage + 10);
+                setStimP(stimP + 5);
+                setRadA(radA + 7);
+                setRadX(radX + 1);
+              }
+            }
+          ]
+        },
+
+        rightPath2: { 
+          text: 'You find yourself at the end of the corridor, with two corridors on your left and right, which corridor will you take?',
+          image: './images/cor_t.png' ,
+          options: [
+            { text: 'Left', nextStep: 'leftCor' }
+          ]
+        },
+
+        leftCor: { 
+          text: 'You find the hallway goes for a bit, then you find a door to the classroom in front of you, and to your right, what will you do?',
+          image: './images/cor_right+cls_ft.png' ,
+          options: [
+            { text: 'Enter Room', nextStep: 'enterClass' },
+            { text: 'Go Right', nextStep: 'rightCorClass' }
+          ]
+        },
+
+        enterClass: { 
+          text: 'You enter the classroom, and you start hearing a weird noise, do you go towards it or go back?',
+          options: [
+            { text: 'Go Towards', nextStep: 'classTow' },
+            { text: 'Go Back', nextStep: 'leftCor' }
+          ]
+        },
+
+        classTow: { 
+          text: 'You go towards the noise, and you see a large radroach, what will you do fight it or run back?',
+          options: [
+            { text: 'Fight', nextStep: 'classRoachFight' },
+            { text: 'Run Back', nextStep: 'leftCor' }
+          ]
+        },
+
+        classRoachFight: { 
+          text: 'You decide to fight the Radroach with no weapons, and the radroach kills you, game over!',
+          options: [
+            { text: 'Continue', nextStep:'deathScreen',
+              action: () => {
+                setHealth(health - 100);
+            }
+            },
+          ]
+        },
+
+        rightCorClass: { 
+          text: 'The corridor goes on for a while, and you become out of breath. You make it to a water fountain. Do you drink from it, or do you carry on?',
+          options: [
+            { text: 'Drink', nextStep: 'drink1' },
+            { text: 'Carry On', nextStep: 'carryOn' }
+          ]
+        },
+
+        rightCorClass: { 
+          text: 'The corridor goes on for a while, and you become out of breath. You make it to a water fountain. Do you drink from it, or do you carry on?',
+          options: [
+            { text: 'Drink', nextStep: 'drink1' },
+            { text: 'Carry On', nextStep: 'carryOn' }
+          ]
+        },
+
+        drink1: { 
+          text: 'You drink from the fountain, and you start to feel unwell, you have gotten radiation poisoning from the water, do you use your rad aways?',
+          options: [
+            { 
+              text: 'Use RadAway', 
+              action: () => {
+                if (radA > 0) { 
+                  setRadA(radA - 1);
+                  setStoryStep('fountHeal1');
+                } else {
+                  setRadation(radiation + 100);
+                  setHealth(health - 100);
+                  setStoryStep('deathScreen');
+                }
+              }
+            },
+            { text: 'Do Nothing', nextStep: 'deathScreen' }
+          ]
+        },
+
+        fountHeal1: { 
+          text: 'You are healed and can now proceed!',
+          options: [
+            { 
+              text: 'Continue',
+              nextStep:'rightPath2',
+              action: () => {
+                setRadA(radA - 1);
+              }
+            }
+          ]
+        },
+
+        carryOn: { 
+          text: 'You proceed but pass out and die from thirst. Game Over!',
+          options: [
+            { text: 'Restart', nextStep: 'start' }
+          ]
+        },
+
+        deathScreen: { 
+          text: 'Play again or exit?',
+          options: [
+            { text: 'Quit', action: () => window.location.href = 'https://www.google.com/' },
+            { text: 'Play Again', nextStep: 'start' }
+          ]
+        }
+      };
+
+      const currentStep = adventureData[storyStep];
+
+      return (
+        <div>
+          <h1>Vault Adventure</h1>
+          <p>It has been about 200 years since the atomic bomb dropped in Memphis, Arkansas. You have been living in vault 113 since you were born, with about 87 other inhabitants.</p>
+
+          {currentStep.image ? (
+            <img 
+              src={currentStep.image} 
+              alt="Scene" 
+              style={{ width: '300px', height: 'auto' }}  // Adjust size here
+            />
+          ) : (
+            <p>No image available for this step.</p>
+          )}
+
+
+
+          <p>{currentStep.text}</p>
+          {currentStep.options && currentStep.options.length > 0 ? (
+            <div>
+              {currentStep.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    if (option.action) option.action();
+                    setStoryStep(option.nextStep);
+                  }}
+                  style={{
+                    color: option.color || 'black',
+                    display: 'inline-block',
+                    marginRight: index !== currentStep.options.length - 1 ? '5px' : '0',
+                    borderRadius: '8px',
+                    padding: '10px 20px',
+                    border: '1px solid #ccc',
+                    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+                    backgroundColor: '#f3f3f3',
+                    cursor: 'pointer',
+                    width: '100px'
+                  }}
+                >
+                  {option.text}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <button onClick={() => setStoryStep('start')} style={{ color: '#333' }}>
+              Restart
+            </button>
+          )}
+
+          {/* Display Game Variables */}
+          <div>
+            <h3>Game Stats</h3>
+            <p>Health: {health}</p>
+            <p>Radiation: {radiation}</p>
+            <p>Bandages: {bandage}</p>
+            <p>Stimpaks: {stimP}</p>
+            <p>RadAways: {radA}</p>
+            <p>RadX: {radX}</p>
+          </div>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('app'));
+    root.render(<App />);
+
+  </script>
+</body>
+</html>
